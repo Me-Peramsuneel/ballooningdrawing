@@ -1,0 +1,2866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Balloon Reference Numbering – Engineering Drawings</title>
+  <style>
+:root, [data-theme="dark"] {
+  --bg: #0f1419;
+  --surface: #1a2332;
+  --surface-2: #243044;
+  --border: #2d3a4f;
+  --text: #e7ecf3;
+  --text-muted: #8b9bb4;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --success: #10b981;
+  --danger: #ef4444;
+  --balloon-stroke: #e11d48;
+  --balloon-fill: #ffffff;
+  --balloon-text: #111827;
+  --radius: 6px;
+  --shadow: 0 4px 20px rgba(0,0,0,0.4);
+  --font: "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-secure: "Times New Roman", Times, Georgia, serif;
+  --privacy-bg: linear-gradient(90deg, #064e3b 0%, #0f2a1a 50%, #064e3b 100%);
+  --privacy-border: #1a4d32;
+  --privacy-text: #a7f3d0;
+  --privacy-strong: #ecfdf5;
+  --privacy-icon: #34d399;
+  --viewer-bg: #1c2433;
+  --ad-bg: #1a2332;
+  --ad-border: #3d4f6a;
+  --ad-text: #64748b;
+  --drop-grad: radial-gradient(ellipse at center, #1e2a3d 0%, #1c2433 70%);
+  --toolbar-grad: linear-gradient(180deg, #1e2a3d 0%, #1a2332 100%);
+  --page-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+[data-theme="light"] {
+  --bg: #f5f5f7;
+  --surface: #ffffff;
+  --surface-2: #f0f0f5;
+  --border: #d2d2d7;
+  --text: #1d1d1f;
+  --text-muted: #6e6e73;
+  --accent: #0071e3;
+  --accent-hover: #0077ed;
+  --success: #34c759;
+  --danger: #ff3b30;
+  --balloon-stroke: #e11d48;
+  --balloon-fill: #ffffff;
+  --balloon-text: #1d1d1f;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  --privacy-bg: linear-gradient(90deg, #e8f8ef 0%, #d8f3e4 50%, #e8f8ef 100%);
+  --privacy-border: #34c759;
+  --privacy-text: #1d1d1f;
+  --privacy-strong: #0b5c2e;
+  --privacy-icon: #248a3d;
+  --viewer-bg: #e8e8ed;
+  --ad-bg: #ffffff;
+  --ad-border: #d2d2d7;
+  --ad-text: #6e6e73;
+  --drop-grad: radial-gradient(ellipse at center, #ffffff 0%, #f5f5f7 75%);
+  --toolbar-grad: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+  --page-shadow: 0 4px 24px rgba(0,0,0,0.12);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* ── Toolbar ── */
+#toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.btn:hover:not(:disabled) { background: #2e3d55; border-color: #3d4f6a; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.primary:hover:not(:disabled) { background: var(--accent-hover); }
+.btn.success { background: var(--success); border-color: var(--success); color: #fff; }
+.btn.success:hover:not(:disabled) { background: #059669; }
+.btn.icon { padding: 6px 10px; font-size: 16px; }
+.btn.small { padding: 4px 10px; font-size: 12px; }
+
+#zoom-level {
+  min-width: 48px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+#page-indicator {
+  font-size: 13px;
+  color: var(--text-muted);
+  min-width: 60px;
+  text-align: center;
+}
+
+#goto-page {
+  width: 52px;
+  padding: 4px 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 13px;
+  text-align: center;
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--surface-2);
+  color: var(--text-muted);
+}
+.badge.active-balloon {
+  background: #be123c33;
+  color: #fb7185;
+  border: 1px solid #e11d48;
+}
+
+/* ── Main layout ── */
+#main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Left toolbar */
+#left-toolbar {
+  width: 72px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.tool-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 60px;
+  padding: 8px 4px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 10px;
+  transition: all 0.15s;
+}
+.tool-btn:hover { background: var(--surface-2); color: var(--text); }
+.tool-btn.active {
+  background: #1e3a5f;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.tool-btn.active[data-tool="balloon"],
+.tool-btn.active[data-tool="callout"] {
+  background: #4c0519;
+  border-color: #e11d48;
+  color: #fb7185;
+}
+
+.tool-divider {
+  width: 40px;
+  height: 1px;
+  background: var(--border);
+  margin: 8px 0;
+}
+
+.size-control {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 4px;
+  font-size: 10px;
+  color: var(--text-muted);
+  width: 100%;
+}
+.size-control input[type="range"] {
+  width: 52px;
+  accent-color: var(--accent);
+}
+.size-control span { font-size: 10px; color: var(--text); }
+
+/* Viewer */
+#viewer-container {
+  flex: 1;
+  position: relative;
+  overflow: auto;
+  background: var(--viewer-bg);
+  cursor: default;
+}
+
+/* High-contrast custom cursors so pointer is visible on white drawings */
+#viewer-container {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M4 12h16M12 4v16' stroke='%23000' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M4 12h16M12 4v16' stroke='%23fff' stroke-width='1' stroke-linecap='round'/%3E%3Ccircle cx='12' cy='12' r='2.5' fill='%23e11d48' stroke='%23fff' stroke-width='1'/%3E%3C/svg%3E") 12 12, crosshair;
+}
+#viewer-container.mode-balloon,
+#viewer-container.mode-callout {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Ccircle cx='14' cy='14' r='9' fill='none' stroke='%23e11d48' stroke-width='2'/%3E%3Ccircle cx='14' cy='14' r='9' fill='none' stroke='%23fff' stroke-width='0.8'/%3E%3Cpath d='M14 2v4M14 22v4M2 14h4M22 14h4' stroke='%23000' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M14 2v4M14 22v4M2 14h4M22 14h4' stroke='%23fff' stroke-width='0.9' stroke-linecap='round'/%3E%3Ccircle cx='14' cy='14' r='2' fill='%23e11d48'/%3E%3C/svg%3E") 14 14, crosshair;
+}
+#viewer-container.mode-text {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='24' viewBox='0 0 20 24'%3E%3Cpath d='M6 2h8M10 2v20M6 22h8' stroke='%23000' stroke-width='2.2' stroke-linecap='round'/%3E%3Cpath d='M6 2h8M10 2v20M6 22h8' stroke='%23fff' stroke-width='0.9' stroke-linecap='round'/%3E%3C/svg%3E") 10 12, text;
+}
+#viewer-container.mode-pan { cursor: grab; }
+#viewer-container.mode-pan.panning { cursor: grabbing; }
+#viewer-container.mode-delete {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M6 6l12 12M18 6L6 18' stroke='%23dc2626' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M6 6l12 12M18 6L6 18' stroke='%23fff' stroke-width='1' stroke-linecap='round'/%3E%3C/svg%3E") 12 12, not-allowed;
+}
+
+/* Text / comment annotation */
+.text-anno {
+  position: absolute;
+  transform: translate(0, 0);
+  min-width: 40px;
+  max-width: 280px;
+  padding: 3px 6px;
+  border: 1.5px solid #2563eb;
+  border-radius: 4px;
+  background: rgba(255, 255, 220, 0.92);
+  color: #111827;
+  font-family: Arial, sans-serif;
+  font-weight: 500;
+  line-height: 1.25;
+  cursor: move;
+  white-space: pre-wrap;
+  word-break: break-word;
+  box-sizing: border-box;
+  z-index: 10;
+  user-select: none;
+  -webkit-user-select: none;
+  pointer-events: auto;
+  touch-action: none;
+}
+.text-anno.selected {
+  box-shadow: 0 0 0 3px #3b82f6, 0 0 12px rgba(59,130,246,0.45);
+  z-index: 20;
+}
+.text-anno:hover:not(.selected) {
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.45);
+}
+.text-anno-editor {
+  position: absolute;
+  z-index: 50;
+  min-width: 120px;
+  max-width: 320px;
+  padding: 4px 8px;
+  border: 2px solid #2563eb;
+  border-radius: 4px;
+  background: #fffbeb;
+  color: #111;
+  font-family: Arial, sans-serif;
+  font-weight: 500;
+  line-height: 1.25;
+  resize: both;
+  overflow: auto;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  outline: none;
+}
+
+.drop-zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  border: 2px dashed var(--border);
+  margin: 24px;
+  border-radius: 12px;
+  transition: border-color 0.2s, background 0.2s;
+}
+.drop-zone.drag-over {
+  border-color: var(--accent);
+  background: #1e3a5f33;
+}
+.drop-content {
+  text-align: center;
+  color: var(--text-muted);
+}
+.drop-content svg { margin-bottom: 16px; opacity: 0.5; }
+.drop-content h2 { color: var(--text); margin-bottom: 8px; font-weight: 600; }
+.drop-content .hint { margin-top: 16px; font-size: 13px; opacity: 0.7; }
+
+#pdf-viewer {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  min-height: 100%;
+}
+#pdf-viewer.hidden { display: none; }
+
+.page-wrapper {
+  position: relative;
+  box-shadow: var(--page-shadow, var(--shadow));
+  background: #fff;
+  line-height: 0;
+}
+.page-wrapper canvas {
+  display: block;
+  max-width: none;
+}
+.page-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+  overflow: visible;
+}
+.page-overlay .balloon {
+  pointer-events: auto;
+}
+
+/* Balloon element */
+.balloon {
+  position: absolute;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-family: var(--font);
+  cursor: move;
+  box-sizing: border-box;
+  transform: translate(-50%, -50%);
+  transition: box-shadow 0.12s;
+  z-index: 10;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  overflow: visible;
+  min-width: 12px;
+  min-height: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+/* Callout: clean leader + arrow (SVG) */
+.balloon.callout {
+  border-radius: 50%;
+  overflow: visible;
+}
+.balloon.callout .callout-svg {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 220%;
+  height: 220%;
+  transform: translate(-50%, -50%) rotate(var(--pointer-angle, 225deg));
+  pointer-events: none;
+  overflow: visible;
+  z-index: 0;
+}
+.balloon.callout .callout-svg line {
+  stroke: var(--pointer-color, #e11d48);
+  stroke-width: var(--leader-w, 2);
+  stroke-linecap: round;
+}
+.balloon.callout .callout-svg polygon {
+  fill: var(--pointer-color, #e11d48);
+  stroke: var(--pointer-color, #e11d48);
+  stroke-width: 0.5;
+}
+.balloon .balloon-num {
+  position: relative;
+  z-index: 2;
+}
+.balloon-rotate-handle {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+  cursor: grab;
+  z-index: 25;
+  pointer-events: auto;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(var(--pointer-angle, 225deg)) translateY(var(--handle-dist, 28px));
+}
+.balloon-rotate-handle:hover {
+  transform: translate(-50%, -50%) rotate(var(--pointer-angle, 225deg)) translateY(var(--handle-dist, 28px)) scale(1.15);
+}
+.balloon-rotate-handle:active { cursor: grabbing; }
+
+.balloon.dragging,
+.text-anno.dragging {
+  cursor: grabbing !important;
+  opacity: 0.92;
+  z-index: 30;
+}
+.balloon.selected {
+  box-shadow: 0 0 0 3px #3b82f6, 0 0 12px rgba(59,130,246,0.5);
+  z-index: 20;
+}
+.balloon:hover:not(.selected) {
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.5);
+}
+
+/* Right panel */
+#right-panel {
+  width: 240px;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  padding: 16px;
+  overflow-y: auto;
+  flex-shrink: 0;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+#right-panel h3 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin: 16px 0 8px;
+  font-weight: 600;
+}
+#right-panel h3:first-child { margin-top: 0; }
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  color: var(--text-muted);
+}
+.info-row strong { color: var(--text); }
+
+.props-empty {
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 8px 0;
+}
+#props-form label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+#props-form input[type="number"],
+#props-form input[type="color"] {
+  display: block;
+  width: 100%;
+  margin-top: 3px;
+  padding: 5px 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 13px;
+}
+#props-form input[type="color"] {
+  height: 32px;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.balloon-list {
+  list-style: none;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+  margin-bottom: 8px;
+}
+.balloon-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.balloon-list li:hover { background: var(--surface-2); }
+.balloon-list li.selected { background: #1e3a5f; }
+.balloon-list .num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid var(--balloon-stroke);
+  background: var(--balloon-fill);
+  color: var(--balloon-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+.balloon-list .meta { color: var(--text-muted); font-size: 11px; }
+
+.credit {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-muted);
+  opacity: 0.75;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  background: var(--surface);
+  padding-bottom: 2px;
+}
+
+.privacy-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 8px 16px;
+  background: var(--privacy-bg);
+  border-bottom: 1px solid var(--privacy-border);
+  color: var(--privacy-text);
+  font-family: var(--font-secure);
+  font-size: 14px;
+  line-height: 1.3;
+  flex-shrink: 0;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.privacy-banner-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  max-width: 100%;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.privacy-banner-inner span {
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-secure);
+}
+.privacy-banner strong {
+  color: var(--privacy-strong);
+  font-weight: 700;
+  font-family: var(--font-secure);
+}
+.privacy-banner .lock {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  color: var(--privacy-icon);
+}
+@media (max-width: 900px) {
+  .privacy-banner { white-space: normal; font-size: 12px; }
+  .privacy-banner-inner, .privacy-banner-inner span { white-space: normal; }
+}
+
+.privacy-note-drop {
+  margin-top: 20px;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 14px 18px;
+  border-radius: 10px;
+  background: var(--privacy-bg);
+  border: 1px solid var(--privacy-border);
+  color: var(--privacy-text);
+  font-family: var(--font-secure);
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.privacy-note-drop strong {
+  color: var(--privacy-strong);
+  display: block;
+  margin-bottom: 4px;
+  font-size: 15px;
+  text-align: center;
+  font-family: var(--font-secure);
+}
+
+/* Theme toggle */
+.theme-toggle {
+  margin-left: auto;
+}
+#btn-theme {
+  min-width: 40px;
+}
+
+
+/* Polished drop zone */
+.drop-zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  border: 2px dashed var(--border);
+  margin: 28px;
+  border-radius: 16px;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  background: var(--drop-grad);
+}
+.drop-zone.drag-over {
+  border-color: #3b82f6;
+  background: var(--drop-grad);
+  box-shadow: inset 0 0 40px rgba(59,130,246,0.12);
+}
+.drop-content {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 24px;
+}
+.drop-content svg { margin-bottom: 16px; opacity: 0.55; color: #60a5fa; }
+.drop-content h2 { color: var(--text); margin-bottom: 8px; font-weight: 650; font-size: 22px; letter-spacing: -0.02em; }
+.drop-content .hint { margin-top: 14px; font-size: 13px; opacity: 0.75; }
+
+/* Toolbar polish */
+#toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--toolbar-grad);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.03);
+}
+.btn.primary {
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+  border-color: #1d4ed8;
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+.btn.success {
+  background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+  border-color: #047857;
+  color: #fff;
+}
+.badge.active-balloon {
+  background: #4c0519;
+  color: #fda4af;
+  border: 1px solid #e11d48;
+}
+
+#left-toolbar {
+  width: 76px;
+  background: var(--toolbar-grad);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 0;
+  gap: 4px;
+  flex-shrink: 0;
+}
+#right-panel {
+  width: 250px;
+  background: var(--toolbar-grad);
+  border-left: 1px solid var(--border);
+  padding: 16px;
+  overflow-y: auto;
+  flex-shrink: 0;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+#right-panel h3 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  margin: 16px 0 8px;
+  font-weight: 600;
+}
+
+
+/* Context menu */
+.context-menu {
+  position: fixed;
+  z-index: 1000;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  min-width: 180px;
+  padding: 4px 0;
+}
+.context-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 16px;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+}
+.context-menu button:hover { background: var(--surface-2); }
+.ctx-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+.modal.hidden { display: none; }
+.modal-content {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 24px;
+  min-width: 300px;
+  box-shadow: var(--shadow);
+}
+.modal-content h3 { margin-bottom: 14px; font-size: 16px; }
+.modal-content input {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.hidden { display: none !important; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #3d4f6a; }
+
+  
+/* Light mode readability fixes */
+[data-theme="light"] #viewer-container {
+  background: var(--viewer-bg);
+}
+[data-theme="light"] .btn {
+  color: var(--text);
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+[data-theme="light"] .btn.primary {
+  color: #ffffff;
+  background: linear-gradient(180deg, #0077ed 0%, #0071e3 100%);
+  border-color: #0060c0;
+}
+[data-theme="light"] .btn.success {
+  color: #ffffff;
+  background: linear-gradient(180deg, #30d158 0%, #34c759 100%);
+  border-color: #248a3d;
+}
+[data-theme="light"] .btn.icon {
+  color: var(--text);
+}
+[data-theme="light"] .tool-btn {
+  color: var(--text-muted);
+}
+[data-theme="light"] .tool-btn:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+[data-theme="light"] .tool-btn.active {
+  background: #e8f1fc;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+[data-theme="light"] .tool-btn.active[data-tool="balloon"],
+[data-theme="light"] .tool-btn.active[data-tool="callout"] {
+  background: #fce8ec;
+  border-color: #e11d48;
+  color: #b01030;
+}
+[data-theme="light"] .badge {
+  background: var(--surface-2);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+[data-theme="light"] .badge.active-balloon {
+  background: #fce8ec;
+  color: #b01030;
+  border-color: #e11d48;
+}
+[data-theme="light"] #zoom-level,
+[data-theme="light"] #page-indicator {
+  color: var(--text-muted);
+}
+[data-theme="light"] #goto-page,
+[data-theme="light"] #props-form input,
+[data-theme="light"] #modal-input {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+[data-theme="light"] .drop-content h2 {
+  color: var(--text);
+}
+[data-theme="light"] .drop-content,
+[data-theme="light"] .drop-content .hint {
+  color: var(--text-muted);
+}
+[data-theme="light"] .info-row {
+  color: var(--text-muted);
+}
+[data-theme="light"] .info-row strong {
+  color: var(--text);
+}
+[data-theme="light"] .credit {
+  color: var(--text-muted);
+  background: var(--surface);
+}
+[data-theme="light"] .context-menu,
+[data-theme="light"] .modal-content {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+}
+[data-theme="light"] .context-menu button {
+  color: var(--text);
+}
+[data-theme="light"] .context-menu button:hover {
+  background: var(--surface-2);
+}
+
+  </style>
+  <!-- PDF.js UMD (works offline-friendly once cached; needs network first load) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+</head>
+<body>
+  <div id="app">
+    <header id="toolbar">
+      <div class="toolbar-group">
+        <button id="btn-open" class="btn primary" title="Open PDF (Ctrl+O)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Open PDF
+        </button>
+        <input type="file" id="file-input" accept="application/pdf,application/json,.json" hidden />
+        <button id="btn-save" class="btn" title="Save Project (Ctrl+S)" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Save
+        </button>
+        <button id="btn-export" class="btn success" title="Export PDF with balloons" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export PDF
+        </button>
+      </div>
+
+      <div class="toolbar-group">
+        <button id="btn-undo" class="btn icon" title="Undo (Ctrl+Z)" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+        </button>
+        <button id="btn-redo" class="btn icon" title="Redo (Ctrl+Y)" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"/></svg>
+        </button>
+      </div>
+
+      <div class="toolbar-group zoom-group">
+        <button id="btn-zoom-out" class="btn icon" title="Zoom Out" disabled>−</button>
+        <span id="zoom-level">100%</span>
+        <button id="btn-zoom-in" class="btn icon" title="Zoom In" disabled>+</button>
+        <button id="btn-fit-page" class="btn" title="Fit to Page" disabled>Fit Page</button>
+        <button id="btn-fit-width" class="btn" title="Fit to Width" disabled>Fit Width</button>
+      </div>
+
+      <div class="toolbar-group page-group">
+        <button id="btn-prev-page" class="btn icon" title="Previous Page" disabled>‹</button>
+        <span id="page-indicator">— / —</span>
+        <button id="btn-next-page" class="btn icon" title="Next Page" disabled>›</button>
+        <input type="number" id="goto-page" min="1" placeholder="Go" title="Go to page" disabled />
+      </div>
+
+      <div class="toolbar-group mode-indicator">
+        <span id="mode-badge" class="badge">Select Mode</span>
+      </div>
+      <div class="toolbar-group theme-toggle">
+        <button id="btn-theme" class="btn icon" title="Toggle light / dark mode" type="button">☀</button>
+      </div>
+    </header>
+
+    <div class="privacy-banner" role="note">
+      <div class="privacy-banner-inner">
+        <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span><strong>Your files stay on your PC only.</strong> — PDFs are not uploaded to any server. Close the tab and session data is cleared (unless you exported or saved).</span>
+      </div>
+    </div>
+
+    <div id="main">
+      <aside id="left-toolbar">
+        <button id="tool-select" class="tool-btn active" title="Select / Move (V)" data-tool="select">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/>
+          </svg>
+          <span>Select</span>
+        </button>
+        <button id="tool-balloon" class="tool-btn" title="Circle balloon (B)" data-tool="balloon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="8"/>
+            <text x="12" y="15.5" text-anchor="middle" font-size="9" fill="currentColor" stroke="none" font-weight="bold">1</text>
+          </svg>
+          <span>Balloon</span>
+        </button>
+        <button id="tool-callout" class="tool-btn" title="Callout with arrow (C)" data-tool="callout">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="10" cy="10" r="6"/>
+            <text x="10" y="13" text-anchor="middle" font-size="8" fill="currentColor" stroke="none" font-weight="bold">1</text>
+            <line x1="14.5" y1="14.5" x2="19" y2="19"/>
+            <polyline points="16,19 19,19 19,16"/>
+          </svg>
+          <span>Callout</span>
+        </button>
+        <button id="tool-text" class="tool-btn" title="Text / Comment (T)" data-tool="text">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/>
+          </svg>
+          <span>Text</span>
+        </button>
+        <button id="tool-pan" class="tool-btn" title="Pan (H)" data-tool="pan">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
+          </svg>
+          <span>Pan</span>
+        </button>
+        <button id="tool-delete" class="tool-btn" title="Delete selected (Del)" data-tool="delete">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+          <span>Delete</span>
+        </button>
+        <div class="tool-divider"></div>
+        <div class="size-control">
+          <label>⌀ Size</label>
+          <input type="range" id="balloon-size" min="8" max="40" value="18" step="1" disabled />
+          <span id="size-value">18 pt</span>
+        </div>
+        <div class="size-control">
+          <label>Border</label>
+          <input type="range" id="border-width" min="0.25" max="4" value="1" step="0.25" disabled />
+          <span id="border-width-value">1 pt</span>
+        </div>
+        <div class="size-control">
+          <label>Shape</label>
+          <select id="balloon-style" disabled style="width:56px;font-size:10px;padding:2px;background:var(--surface-2);border:1px solid var(--border);border-radius:4px;color:var(--text);">
+            <option value="callout">Corner</option>
+            <option value="circle">Circle</option>
+          </select>
+        </div>
+        <div class="size-control">
+          <label>Corner</label>
+          <input type="range" id="pointer-angle" min="0" max="360" value="225" step="5" disabled />
+          <span id="pointer-angle-value">225°</span>
+        </div>
+        <div class="size-control">
+          <label>Text</label>
+          <input type="range" id="text-size" min="6" max="24" value="10" step="1" disabled />
+          <span id="text-size-value">10 pt</span>
+        </div>
+      </aside>
+
+      <main id="viewer-container">
+        <div id="drop-zone" class="drop-zone">
+          <div class="drop-content">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="12" y1="18" x2="12" y2="12"/>
+              <line x1="9" y1="15" x2="15" y2="15"/>
+            </svg>
+            <h2>Drop Engineering PDF here</h2>
+            <p>or click <strong>Open PDF</strong> to select a file</p>
+            <p class="hint">Supports multi-page A0–A4 drawings · High-resolution</p>
+            <div class="privacy-note-drop">
+              <strong>Private by design</strong>
+              Your PDF never leaves your computer. We do not collect or store your drawings.
+              After you export and close this page, the working data in this tab is cleared.
+            </div>
+          </div>
+        </div>
+        <div id="pdf-viewer" class="hidden"></div>
+      </main>
+
+      <aside id="right-panel">
+        <h3>Project Info</h3>
+        <div class="info-row"><span>Circle / Corner</span><strong id="total-balloons">0 / 0</strong></div>
+        <div class="info-row"><span>Comments</span><strong id="total-comments">0</strong></div>
+        <div class="info-row"><span>Next Number</span><strong id="next-number">1</strong></div>
+        <div class="info-row"><span>Current Page</span><strong id="current-page-info">—</strong></div>
+        <div class="info-row"><span>Selected</span><strong id="selected-info">None</strong></div>
+
+        <h3>Balloon Properties</h3>
+        <div id="props-empty" class="props-empty">Select a balloon to edit</div>
+        <div id="props-form" class="hidden">
+          <div id="props-balloon-fields">
+            <label>Number<input type="number" id="prop-number" min="1" /></label>
+            <label>Diameter (pt)<input type="number" id="prop-size" min="6" max="60" step="0.5" /></label>
+            <label>Border thickness (pt)<input type="number" id="prop-border-width" min="0.25" max="6" step="0.25" value="1" /></label>
+            <label>Shape
+              <select id="prop-style" style="width:100%;margin-top:3px;padding:5px 8px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:13px;">
+                <option value="callout">Corner balloon</option>
+                <option value="circle">Circle only</option>
+              </select>
+            </label>
+            <label>Corner angle (°)
+              <input type="number" id="prop-pointer-angle" min="0" max="360" step="1" value="225" />
+            </label>
+          </div>
+          <div id="props-text-fields" class="hidden">
+            <label>Comment text
+              <textarea id="prop-text-content" rows="3" style="width:100%;margin-top:3px;padding:5px 8px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:13px;resize:vertical;"></textarea>
+            </label>
+          </div>
+          <label>Text Size (pt)<input type="number" id="prop-text-size" min="4" max="30" step="0.5" /></label>
+          <label>Stroke / Border<input type="color" id="prop-stroke" value="#e11d48" /></label>
+          <label>Fill Color<input type="color" id="prop-fill" value="#ffffff" /></label>
+          <label>Text Color<input type="color" id="prop-text-color" value="#000000" /></label>
+          <button id="btn-apply-props" class="btn primary small">Apply</button>
+        </div>
+
+        <h3>Legend</h3>
+        <ul id="balloon-list" class="balloon-list"></ul>
+        <div class="credit">Created by Peram Suneel</div>
+      </aside>
+    </div>
+
+  </div>
+
+  <div id="context-menu" class="context-menu hidden">
+    <button data-action="edit">Edit Number</button>
+    <button data-action="replace">Replace Number</button>
+    <button data-action="delete">Delete Balloon</button>
+    <button data-action="duplicate">Duplicate Balloon</button>
+    <button data-action="size">Change Size…</button>
+    <div class="ctx-divider"></div>
+    <button data-action="cancel">Cancel</button>
+  </div>
+
+  <div id="modal" class="modal hidden">
+    <div class="modal-content">
+      <h3 id="modal-title">Edit Number</h3>
+      <input type="number" id="modal-input" min="1" />
+      <div class="modal-actions">
+        <button id="modal-cancel" class="btn">Cancel</button>
+        <button id="modal-ok" class="btn primary">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+/**
+ * Balloon Reference Numbering Application
+ * ========================================
+ *
+ * DESIGN DECISIONS
+ * ----------------
+ * 1. PDF Coordinate System
+ *    - All balloon positions are stored in PDF user-space points.
+ *    - Origin is bottom-left of the page (PDF standard).
+ *    - Y increases upward.
+ *    - Units: 1 point = 1/72 inch.
+ *    - This guarantees correct placement under any zoom, pan, resize,
+ *      print, or export.
+ *
+ * 2. Balloon Numbering Logic
+ *    - Balloons are kept in an ordered array (by their number).
+ *    - Next number = max(existing numbers) + 1 (or 1 if empty).
+ *    - On delete: remaining balloons are sorted by current number and
+ *      re-assigned consecutive integers starting at 1.
+ *    - Manual edit / replace: can create gaps or force renumber of
+ *      conflicting balloons.
+ *
+ * 3. Size Model
+ *    - diameter and fontSize are stored in PDF points.
+ *    - On screen they are scaled by the current viewport scale.
+ *    - Consequently balloons stay the same physical size relative to
+ *      the drawing when zooming.
+ *
+ * 4. Export Strategy
+ *    - Original PDF bytes are kept in memory.
+ *    - pdf-lib loads a fresh copy, draws each balloon (circle + centered
+ *      text) using the stored PDF coordinates, then saves a new PDF.
+ *    - Original quality, page size and page count are preserved.
+ *
+ * 5. Undo / Redo
+ *    - Command pattern: every mutation pushes a reverse-able snapshot
+ *      of the balloons array (deep clone).
+ */
+
+/* PDF.js is loaded via <script> as global pdfjsLib (UMD build). */
+if (typeof pdfjsLib === "undefined") {
+  console.error("PDF.js failed to load. Check your network connection.");
+} else {
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+}
+
+// ─────────────────────────────────────────────────────────────
+// State
+// ─────────────────────────────────────────────────────────────
+const state = {
+  pdfDoc: null,          // PDF.js document
+  pdfBytes: null,        // original Uint8Array for export / save
+  fileName: "drawing.pdf",
+  numPages: 0,
+  currentPage: 1,
+  scale: 1.0,            // current zoom scale (1 = 100%)
+  tool: "select",        // "balloon" | "select" | "pan" | "delete"
+  annotations: [],       // balloons + text comments
+  // balloon: { type:'balloon', id, page, x, y, number, diameter, fontSize, stroke, fill, textColor }
+  // text:    { type:'text', id, page, x, y, content, fontSize, stroke, fill, textColor, width }
+  selectedId: null,
+  nextId: 1,
+  // default appearance (PDF points)
+  defaultDiameter: 18,
+  defaultFontSize: 10,
+  defaultBorderWidth: 1.5,  // PDF points
+  defaultBalloonStyle: "circle", // "circle" | "callout"
+  defaultPointerAngle: 225, // degrees – corner direction
+  defaultStroke: "#e11d48",
+  defaultFill: "#ffffff",
+  defaultTextColor: "#000000",
+  // history
+  history: [],
+  historyIndex: -1,
+  // interaction
+  isDragging: false,
+  dragOffset: { x: 0, y: 0 },
+  isPanning: false,
+  panStart: { x: 0, y: 0, scrollLeft: 0, scrollTop: 0 },
+  // page viewports (pageNumber → { viewport, canvas, overlay })
+  pageViews: {},
+  // context / modal
+  contextBalloonId: null,
+  modalMode: null, // "edit" | "replace"
+  // text defaults
+  defaultTextContent: "Comment",
+  defaultTextWidth: 120, // PDF points approximate width
+};
+
+// Compatibility + helpers over unified annotations list
+Object.defineProperty(state, "balloons", {
+  get() { return state.annotations.filter(a => a.type === "balloon" || !a.type); },
+  set(v) {
+    const texts = state.annotations.filter(a => a.type === "text");
+    // ensure type on balloons
+    state.annotations = [...v.map(b => ({ ...b, type: b.type || "balloon" })), ...texts];
+  }
+});
+function getTexts() { return state.annotations.filter(a => a.type === "text"); }
+function getAllAnnos() { return state.annotations; }
+
+
+// ─────────────────────────────────────────────────────────────
+// DOM refs
+// ─────────────────────────────────────────────────────────────
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => document.querySelectorAll(sel);
+
+const els = {
+  fileInput: $("#file-input"),
+  btnOpen: $("#btn-open"),
+  btnSave: $("#btn-save"),
+  btnExport: $("#btn-export"),
+  btnUndo: $("#btn-undo"),
+  btnRedo: $("#btn-redo"),
+  btnZoomIn: $("#btn-zoom-in"),
+  btnZoomOut: $("#btn-zoom-out"),
+  btnFitPage: $("#btn-fit-page"),
+  btnFitWidth: $("#btn-fit-width"),
+  btnPrev: $("#btn-prev-page"),
+  btnNext: $("#btn-next-page"),
+  gotoPage: $("#goto-page"),
+  zoomLevel: $("#zoom-level"),
+  pageIndicator: $("#page-indicator"),
+  modeBadge: $("#mode-badge"),
+  dropZone: $("#drop-zone"),
+  pdfViewer: $("#pdf-viewer"),
+  viewerContainer: $("#viewer-container"),
+  totalBalloons: $("#total-balloons"),
+  nextNumber: $("#next-number"),
+  currentPageInfo: $("#current-page-info"),
+  selectedInfo: $("#selected-info"),
+  propsEmpty: $("#props-empty"),
+  propsForm: $("#props-form"),
+  propNumber: $("#prop-number"),
+  propSize: $("#prop-size"),
+  propTextSize: $("#prop-text-size"),
+  propStroke: $("#prop-stroke"),
+  propFill: $("#prop-fill"),
+  propTextColor: $("#prop-text-color"),
+  btnApplyProps: $("#btn-apply-props"),
+  balloonList: $("#balloon-list"),
+  balloonSize: $("#balloon-size"),
+  textSize: $("#text-size"),
+  sizeValue: $("#size-value"),
+  textSizeValue: $("#text-size-value"),
+  contextMenu: $("#context-menu"),
+  modal: $("#modal"),
+  modalTitle: $("#modal-title"),
+  modalInput: $("#modal-input"),
+  modalOk: $("#modal-ok"),
+  modalCancel: $("#modal-cancel"),
+};
+
+// ─────────────────────────────────────────────────────────────
+// History helpers
+// ─────────────────────────────────────────────────────────────
+function pushHistory() {
+  // Call AFTER a mutation. Stores the new state so undo can restore the previous entry.
+  state.history = state.history.slice(0, state.historyIndex + 1);
+  state.history.push(structuredClone(state.annotations));
+  state.historyIndex = state.history.length - 1;
+  if (state.history.length > 80) {
+    state.history.shift();
+    state.historyIndex--;
+  }
+  updateUndoRedoUI();
+}
+
+function undo() {
+  if (state.historyIndex <= 0) return;
+  state.historyIndex--;
+  state.annotations = structuredClone(state.history[state.historyIndex]);
+  state.selectedId = null;
+  renderAllBalloons();
+  updateUI();
+  updateUndoRedoUI();
+}
+
+function redo() {
+  if (state.historyIndex >= state.history.length - 1) return;
+  state.historyIndex++;
+  state.annotations = structuredClone(state.history[state.historyIndex]);
+  state.selectedId = null;
+  renderAllBalloons();
+  updateUI();
+  updateUndoRedoUI();
+}
+
+function updateUndoRedoUI() {
+  els.btnUndo.disabled = state.historyIndex <= 0;
+  els.btnRedo.disabled = state.historyIndex >= state.history.length - 1;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Balloon helpers
+// ─────────────────────────────────────────────────────────────
+function getBalloonsOfStyle(style) {
+  return state.annotations.filter(a => (a.type === "balloon" || !a.type) && (a.style || "callout") === style);
+}
+function getNextNumber(style) {
+  const s = style || state.defaultBalloonStyle || "callout";
+  const list = getBalloonsOfStyle(s);
+  if (list.length === 0) return 1;
+  return Math.max(...list.map((b) => b.number)) + 1;
+}
+function getNextNumberAny() {
+  // used only for display fallback
+  return getNextNumber(state.defaultBalloonStyle || "callout");
+}
+
+function renumberSequential() {
+  // Renumber circle and callout series independently
+  ["circle", "callout"].forEach(style => {
+    const list = getBalloonsOfStyle(style);
+    list.sort((a, b) => a.number - b.number);
+    list.forEach((b, i) => { b.number = i + 1; });
+  });
+}
+
+function findBalloon(id) {
+  return state.annotations.find((b) => b.id === id);
+}
+
+function createBalloon(page, pdfX, pdfY, styleOverride) {
+  const style = styleOverride || state.defaultBalloonStyle || "circle";
+  const balloon = {
+    type: "balloon",
+    id: state.nextId++,
+    page,
+    x: pdfX,
+    y: pdfY,
+    number: getNextNumber(style),
+    diameter: state.defaultDiameter,
+    fontSize: state.defaultFontSize,
+    borderWidth: state.defaultBorderWidth,
+    style: style,
+    pointerAngle: state.defaultPointerAngle != null ? state.defaultPointerAngle : 225,
+    stroke: state.defaultStroke,
+    fill: state.defaultFill,
+    textColor: state.defaultTextColor,
+  };
+  state.annotations.push(balloon);
+  return balloon;
+}
+
+function createText(page, pdfX, pdfY, content) {
+  const t = {
+    type: "text",
+    id: state.nextId++,
+    page,
+    x: pdfX,
+    y: pdfY,
+    content: content || state.defaultTextContent,
+    fontSize: state.defaultFontSize,
+    stroke: "#2563eb",
+    fill: "#fffbeb",
+    textColor: "#111827",
+    width: state.defaultTextWidth,
+  };
+  state.annotations.push(t);
+  return t;
+}
+
+function deleteBalloon(id) {
+  const idx = state.annotations.findIndex((b) => b.id === id);
+  if (idx === -1) return;
+  const wasBalloon = state.annotations[idx].type !== "text";
+  state.annotations.splice(idx, 1);
+  if (wasBalloon) renumberSequential();
+  if (state.selectedId === id) state.selectedId = null;
+}
+
+function replaceNumber(id, newNumber) {
+  const target = findBalloon(id);
+  if (!target || target.type === "text") return;
+  newNumber = parseInt(newNumber, 10);
+  if (isNaN(newNumber) || newNumber < 1) return;
+  const oldNumber = target.number;
+  if (newNumber === oldNumber) return;
+  const style = target.style || "callout";
+  const conflict = state.annotations.find((b) =>
+    b.id !== id && b.type !== "text" && (b.style || "callout") === style && b.number === newNumber
+  );
+  if (conflict) conflict.number = oldNumber;
+  target.number = newNumber;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Coordinate conversion
+// ─────────────────────────────────────────────────────────────
+/**
+ * Convert a screen (client) click on a page overlay into PDF points.
+ * PDF origin = bottom-left.
+ */
+function screenToPdf(pageNum, clientX, clientY) {
+  const view = state.pageViews[pageNum];
+  if (!view) return null;
+  const rect = view.canvas.getBoundingClientRect();
+  const canvasX = clientX - rect.left;
+  const canvasY = clientY - rect.top;
+  // PDF.js viewport.convertToPdfPoint expects coordinates relative to the
+  // viewport (top-left origin, same as CSS).
+  const [pdfX, pdfY] = view.viewport.convertToPdfPoint(canvasX, canvasY);
+  return { x: pdfX, y: pdfY };
+}
+
+/**
+ * Convert PDF point to CSS pixel position relative to the canvas top-left.
+ */
+function pdfToScreen(pageNum, pdfX, pdfY) {
+  const view = state.pageViews[pageNum];
+  if (!view) return null;
+  const [sx, sy] = view.viewport.convertToViewportPoint(pdfX, pdfY);
+  return { x: sx, y: sy };
+}
+
+// ─────────────────────────────────────────────────────────────
+// PDF loading & rendering
+// ─────────────────────────────────────────────────────────────
+async function loadPdf(fileOrBytes, fileName = "drawing.pdf") {
+  if (typeof pdfjsLib === "undefined") {
+    alert("PDF.js library failed to load.\n\nPlease check your internet connection (CDN scripts are required) and reload the page.");
+    return;
+  }
+  try {
+    let bytes;
+    if (fileOrBytes instanceof File) {
+      bytes = new Uint8Array(await fileOrBytes.arrayBuffer());
+      state.fileName = fileOrBytes.name;
+    } else {
+      bytes = fileOrBytes;
+      state.fileName = fileName;
+    }
+    // Keep an independent copy – PDF.js worker may transfer/detach the ArrayBuffer
+    // Validate PDF header before anything else
+    const header = new TextDecoder().decode(bytes.subarray(0, 5));
+    if (!header.startsWith("%PDF")) {
+      throw new Error("Not a valid PDF file (missing %PDF header). Please select a real PDF drawing.");
+    }
+    // Keep independent copies – PDF.js worker may transfer/detach the ArrayBuffer
+    state.pdfBytes = bytes.slice();
+
+    const loadingTask = pdfjsLib.getDocument({ data: bytes.slice() });
+    state.pdfDoc = await loadingTask.promise;
+    state.numPages = state.pdfDoc.numPages;
+    state.currentPage = 1;
+    state.annotations = [];
+    state.selectedId = null;
+    state.nextId = 1;
+    state.history = [[]];
+    state.historyIndex = 0;
+    state.pageViews = {};
+
+    els.dropZone.classList.add("hidden");
+    els.pdfViewer.classList.remove("hidden");
+    enableControls(true);
+
+    await renderAllPages();
+    updateUI();
+    updateUndoRedoUI();
+  } catch (err) {
+    console.error(err);
+    alert("Failed to open PDF: " + (err.message || err));
+  }
+}
+
+async function renderAllPages() {
+  els.pdfViewer.innerHTML = "";
+  state.pageViews = {};
+
+  for (let i = 1; i <= state.numPages; i++) {
+    await renderPage(i);
+  }
+  renderAllBalloons();
+}
+
+async function renderPage(pageNum) {
+  const page = await state.pdfDoc.getPage(pageNum);
+  const viewport = page.getViewport({ scale: state.scale });
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "page-wrapper";
+  wrapper.dataset.page = pageNum;
+
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  // High-DPI support
+  const outputScale = window.devicePixelRatio || 1;
+  canvas.width = Math.floor(viewport.width * outputScale);
+  canvas.height = Math.floor(viewport.height * outputScale);
+  canvas.style.width = Math.floor(viewport.width) + "px";
+  canvas.style.height = Math.floor(viewport.height) + "px";
+  const transform = outputScale !== 1 ? [outputScale, 0, 0, outputScale, 0, 0] : null;
+
+  const overlay = document.createElement("div");
+  overlay.className = "page-overlay";
+  overlay.dataset.page = pageNum;
+
+  wrapper.appendChild(canvas);
+  wrapper.appendChild(overlay);
+  els.pdfViewer.appendChild(wrapper);
+
+  await page.render({
+    canvasContext: ctx,
+    viewport,
+    transform,
+  }).promise;
+
+  state.pageViews[pageNum] = { viewport, canvas, overlay, wrapper };
+
+  // Click / pointer handlers on overlay
+  overlay.addEventListener("pointerdown", (e) => onOverlayPointerDown(e, pageNum));
+  overlay.addEventListener("contextmenu", (e) => onOverlayContextMenu(e, pageNum));
+}
+
+function renderAllBalloons() {
+  Object.values(state.pageViews).forEach((v) => {
+    v.overlay.innerHTML = "";
+  });
+
+  state.annotations.forEach((anno) => {
+    const view = state.pageViews[anno.page];
+    if (!view) return;
+    const screen = pdfToScreen(anno.page, anno.x, anno.y);
+    if (!screen) return;
+
+    if (anno.type === "text") {
+      const pxFont = anno.fontSize * state.scale;
+      const pxWidth = (anno.width || 120) * state.scale;
+      const el = document.createElement("div");
+      el.className = "text-anno" + (anno.id === state.selectedId ? " selected" : "");
+      el.dataset.id = anno.id;
+      el.style.left = screen.x + "px";
+      el.style.top = screen.y + "px";
+      el.style.fontSize = pxFont + "px";
+      el.style.width = pxWidth + "px";
+      el.style.borderColor = anno.stroke || "#2563eb";
+      el.style.background = anno.fill || "#fffbeb";
+      el.style.color = anno.textColor || "#111827";
+      el.textContent = anno.content || "";
+      el.addEventListener("pointerdown", (e) => onAnnoPointerDown(e, anno));
+      el.addEventListener("dblclick", (e) => {
+        e.stopPropagation();
+        startInlineTextEdit(anno);
+      });
+      el.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        showContextMenu(e.clientX, e.clientY, anno.id);
+      });
+      view.overlay.appendChild(el);
+    } else {
+      // balloon: circle OR callout (leader + arrow), separate number series
+      const pxDiameter = anno.diameter * state.scale;
+      const pxFont = anno.fontSize * state.scale;
+      const style = anno.style || state.defaultBalloonStyle || "callout";
+      const angle = anno.pointerAngle != null ? anno.pointerAngle : (state.defaultPointerAngle || 225);
+      const bw = (anno.borderWidth != null ? anno.borderWidth : state.defaultBorderWidth) * state.scale;
+      const el = document.createElement("div");
+      el.className = "balloon" + (style === "callout" ? " callout" : "") + (anno.id === state.selectedId ? " selected" : "");
+      el.dataset.id = anno.id;
+      el.style.left = screen.x + "px";
+      el.style.top = screen.y + "px";
+      el.style.width = pxDiameter + "px";
+      el.style.height = pxDiameter + "px";
+      el.style.border = Math.max(0.5, bw) + "px solid " + anno.stroke;
+      el.style.background = anno.fill;
+      el.style.color = anno.textColor;
+      el.style.fontSize = pxFont + "px";
+      el.style.setProperty("--pointer-angle", angle + "deg");
+      el.style.setProperty("--pointer-color", anno.stroke || "#e11d48");
+      el.style.setProperty("--leader-w", Math.max(1.5, bw * 1.2));
+
+      const numSpan = document.createElement("span");
+      numSpan.className = "balloon-num";
+      numSpan.textContent = String(anno.number);
+      numSpan.style.pointerEvents = "none";
+      numSpan.style.lineHeight = "1";
+      el.appendChild(numSpan);
+
+      if (style === "callout") {
+        // SVG leader line from circle edge to tip + filled arrow head
+        const svgNS = "http://www.w3.org/2000/svg";
+        const svg = document.createElementNS(svgNS, "svg");
+        svg.setAttribute("class", "callout-svg");
+        svg.setAttribute("viewBox", "0 0 100 100");
+        // Circle center at 50,50 in viewBox; radius ~22.7 (half of circle which is ~45% of 220% box)
+        // Leader goes downward in local coords (angle rotates whole svg)
+        // viewBox 0-100, circle is ~45% of balloon element; svg is 220% of balloon
+        // Leader from edge of circle downward in local space
+        const line = document.createElementNS(svgNS, "line");
+        line.setAttribute("x1", "50");
+        line.setAttribute("y1", "68");
+        line.setAttribute("x2", "50");
+        line.setAttribute("y2", "86");
+        line.setAttribute("stroke", anno.stroke || "#e11d48");
+        line.setAttribute("stroke-width", "3");
+        line.setAttribute("stroke-linecap", "round");
+        svg.appendChild(line);
+        const arrow = document.createElementNS(svgNS, "polygon");
+        arrow.setAttribute("points", "50,99 42,84 58,84");
+        arrow.setAttribute("fill", anno.stroke || "#e11d48");
+        svg.appendChild(arrow);
+        el.appendChild(svg);
+
+        const handleDist = pxDiameter * 1.15;
+        el.style.setProperty("--handle-dist", handleDist + "px");
+
+        if (anno.id === state.selectedId) {
+          const handle = document.createElement("div");
+          handle.className = "balloon-rotate-handle";
+          handle.title = "Drag to rotate callout arrow";
+          handle.addEventListener("pointerdown", (e) => onPointerRotateStart(e, anno, el));
+          el.appendChild(handle);
+        }
+      }
+
+      el.addEventListener("pointerdown", (e) => {
+        if (e.target.classList.contains("balloon-rotate-handle")) return;
+        onAnnoPointerDown(e, anno);
+      });
+      el.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        showContextMenu(e.clientX, e.clientY, anno.id);
+      });
+      view.overlay.appendChild(el);
+    }
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+// Interaction handlers
+// ─────────────────────────────────────────────────────────────
+function onOverlayPointerDown(e, pageNum) {
+  if (e.button !== 0) return; // left only
+  hideContextMenu();
+
+  if (state.tool === "balloon") {
+    e.preventDefault();
+    const pdf = screenToPdf(pageNum, e.clientX, e.clientY);
+    if (!pdf) return;
+    state.defaultBalloonStyle = "circle";
+    const b = createBalloon(pageNum, pdf.x, pdf.y, "circle");
+    state.selectedId = b.id;
+    pushHistory();
+    renderAllBalloons();
+    updateUI();
+    return;
+  }
+
+  if (state.tool === "callout") {
+    e.preventDefault();
+    const pdf = screenToPdf(pageNum, e.clientX, e.clientY);
+    if (!pdf) return;
+    state.defaultBalloonStyle = "callout";
+    const b = createBalloon(pageNum, pdf.x, pdf.y, "callout");
+    state.selectedId = b.id;
+    pushHistory();
+    renderAllBalloons();
+    updateUI();
+    return;
+  }
+
+  if (state.tool === "text") {
+    e.preventDefault();
+    const pdf = screenToPdf(pageNum, e.clientX, e.clientY);
+    if (!pdf) return;
+    // Place text then open inline editor
+    const t = createText(pageNum, pdf.x, pdf.y, "");
+    state.selectedId = t.id;
+    pushHistory();
+    renderAllBalloons();
+    updateUI();
+    // open editor after render
+    setTimeout(() => startInlineTextEdit(t), 30);
+    return;
+  }
+
+  if (state.tool === "pan") {
+    startPan(e);
+    return;
+  }
+
+  // Select mode – click empty space deselects
+  if (state.tool === "select") {
+    state.selectedId = null;
+    renderAllBalloons();
+    updateUI();
+  }
+}
+
+
+function onPointerRotateStart(e, anno, el) {
+  e.stopPropagation();
+  e.preventDefault();
+  if (e.button !== 0) return;
+  const page = anno.page;
+  const view = state.pageViews[page];
+  if (!view) return;
+  const center = pdfToScreen(page, anno.x, anno.y);
+  if (!center) return;
+  const rect = view.canvas.getBoundingClientRect();
+  const cx = rect.left + center.x;
+  const cy = rect.top + center.y;
+
+  const move = (ev) => {
+    const dx = ev.clientX - cx;
+    const dy = ev.clientY - cy;
+    // angle: 0 = up, clockwise in screen space; CSS rotate is clockwise from up for our triangle (border-top points down in local, then rotate)
+    let deg = Math.atan2(dx, -dy) * (180 / Math.PI);
+    if (deg < 0) deg += 360;
+    anno.pointerAngle = Math.round(deg);
+    state.defaultPointerAngle = anno.pointerAngle;
+    el.style.setProperty("--pointer-angle", anno.pointerAngle + "deg");
+    const label = document.getElementById("pointer-angle-value");
+    if (label) label.textContent = anno.pointerAngle + "°";
+    const slider = document.getElementById("pointer-angle");
+    if (slider) slider.value = anno.pointerAngle;
+    const prop = document.getElementById("prop-pointer-angle");
+    if (prop) prop.value = anno.pointerAngle;
+  };
+  const up = () => {
+    document.removeEventListener("pointermove", move);
+    document.removeEventListener("pointerup", up);
+    pushHistory();
+    renderAllBalloons();
+    updateUI();
+  };
+  document.addEventListener("pointermove", move);
+  document.addEventListener("pointerup", up);
+}
+
+function onAnnoPointerDown(e, anno) {
+  e.stopPropagation();
+  e.preventDefault();
+  if (e.button !== 0) return;
+  hideContextMenu();
+
+  if (state.tool === "delete") {
+    deleteBalloon(anno.id);
+    pushHistory();
+    renderAllBalloons();
+    updateUI();
+    return;
+  }
+
+  // Select without full re-render (keeps the same DOM node under the pointer)
+  const prevSelected = state.selectedId;
+  state.selectedId = anno.id;
+  if (prevSelected !== anno.id) {
+    document.querySelectorAll(".balloon.selected, .text-anno.selected").forEach(el => el.classList.remove("selected"));
+    const node = e.currentTarget;
+    if (node) node.classList.add("selected");
+    updateUI();
+  }
+
+  // In balloon/text placement modes, a click on an existing item only selects – no drag start if user wants to place nearby
+  // Still allow drag in all modes except pure pan
+  if (state.tool === "pan") return;
+
+  const page = anno.page;
+  const view = state.pageViews[page];
+  if (!view) return;
+
+  // Canvas bounding rect in client coordinates
+  const rect0 = view.canvas.getBoundingClientRect();
+  // Anchor of this annotation in canvas-local CSS pixels (center for balloon, top-left for text)
+  const anchor = pdfToScreen(page, anno.x, anno.y);
+  if (!anchor) return;
+
+  // Grab offset: where inside the annotation the user pressed (client space)
+  const grabOffsetX = e.clientX - (rect0.left + anchor.x);
+  const grabOffsetY = e.clientY - (rect0.top + anchor.y);
+
+  let moved = false;
+  let lastPdfX = anno.x;
+  let lastPdfY = anno.y;
+
+  const moveHandler = (ev) => {
+    const v = state.pageViews[page];
+    if (!v) return;
+    const rect = v.canvas.getBoundingClientRect();
+
+    // Desired anchor position in canvas-local CSS pixels
+    const relX = (ev.clientX - grabOffsetX) - rect.left;
+    const relY = (ev.clientY - grabOffsetY) - rect.top;
+
+    // Clamp lightly to page bounds (still allow slight overflow)
+    const maxX = v.viewport.width;
+    const maxY = v.viewport.height;
+    const clampedX = Math.min(maxX + 20, Math.max(-20, relX));
+    const clampedY = Math.min(maxY + 20, Math.max(-20, relY));
+
+    const [pdfX, pdfY] = v.viewport.convertToPdfPoint(clampedX, clampedY);
+    anno.x = pdfX;
+    anno.y = pdfY;
+    lastPdfX = pdfX;
+    lastPdfY = pdfY;
+    moved = true;
+
+    // Live visual update – support both balloons and text
+    const el = document.querySelector(`.balloon[data-id="${anno.id}"], .text-anno[data-id="${anno.id}"]`);
+    if (el) {
+      el.classList.add("dragging");
+      el.style.left = clampedX + "px";
+      el.style.top = clampedY + "px";
+    }
+  };
+
+  const upHandler = (ev) => {
+    document.removeEventListener("pointermove", moveHandler);
+    document.removeEventListener("pointerup", upHandler);
+    document.removeEventListener("pointercancel", upHandler);
+    try { e.target.releasePointerCapture(e.pointerId); } catch (_) {}
+    if (moved) {
+      anno.x = lastPdfX;
+      anno.y = lastPdfY;
+      pushHistory();
+      renderAllBalloons();
+      updateUI();
+    }
+  };
+
+  try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {}
+  document.addEventListener("pointermove", moveHandler);
+  document.addEventListener("pointerup", upHandler);
+  document.addEventListener("pointercancel", upHandler);
+}
+
+function startPan(e) {
+  state.isPanning = true;
+  els.viewerContainer.classList.add("panning");
+  state.panStart = {
+    x: e.clientX,
+    y: e.clientY,
+    scrollLeft: els.viewerContainer.scrollLeft,
+    scrollTop: els.viewerContainer.scrollTop,
+  };
+  const move = (ev) => {
+    if (!state.isPanning) return;
+    els.viewerContainer.scrollLeft = state.panStart.scrollLeft - (ev.clientX - state.panStart.x);
+    els.viewerContainer.scrollTop = state.panStart.scrollTop - (ev.clientY - state.panStart.y);
+  };
+  const up = () => {
+    state.isPanning = false;
+    els.viewerContainer.classList.remove("panning");
+    document.removeEventListener("pointermove", move);
+    document.removeEventListener("pointerup", up);
+  };
+  document.addEventListener("pointermove", move);
+  document.addEventListener("pointerup", up);
+}
+
+function onOverlayContextMenu(e, pageNum) {
+  e.preventDefault();
+  // if right-click lands on a balloon the balloon handler already stopped propagation
+  hideContextMenu();
+}
+
+// ─────────────────────────────────────────────────────────────
+// Context menu & modal
+// ─────────────────────────────────────────────────────────────
+
+function startInlineTextEdit(anno) {
+  if (!anno || anno.type !== "text") return;
+  const view = state.pageViews[anno.page];
+  if (!view) return;
+  const screen = pdfToScreen(anno.page, anno.x, anno.y);
+  if (!screen) return;
+
+  // Remove any existing editor
+  document.querySelectorAll(".text-anno-editor").forEach(el => el.remove());
+
+  const editor = document.createElement("textarea");
+  editor.className = "text-anno-editor";
+  editor.value = anno.content || "";
+  editor.style.left = screen.x + "px";
+  editor.style.top = screen.y + "px";
+  editor.style.fontSize = (anno.fontSize * state.scale) + "px";
+  editor.style.width = ((anno.width || 120) * state.scale) + "px";
+  editor.style.minHeight = (anno.fontSize * state.scale * 1.6) + "px";
+  view.overlay.appendChild(editor);
+  editor.focus();
+  editor.select();
+
+  const commit = () => {
+    const val = editor.value.trim();
+    if (val === "" && !(anno.content)) {
+      // empty brand-new comment → remove
+      deleteBalloon(anno.id);
+    } else {
+      anno.content = val || anno.content || "Comment";
+    }
+    editor.remove();
+    pushHistory();
+    renderAllBalloons();
+    updateUI();
+  };
+
+  editor.addEventListener("blur", commit);
+  editor.addEventListener("keydown", (ev) => {
+    if (ev.key === "Escape") {
+      editor.remove();
+      renderAllBalloons();
+    }
+    if (ev.key === "Enter" && !ev.shiftKey) {
+      ev.preventDefault();
+      editor.blur();
+    }
+  });
+}
+
+function showContextMenu(x, y, balloonId) {
+  state.contextBalloonId = balloonId;
+  els.contextMenu.classList.remove("hidden");
+  els.contextMenu.style.left = x + "px";
+  els.contextMenu.style.top = y + "px";
+  // keep inside viewport
+  const rect = els.contextMenu.getBoundingClientRect();
+  if (rect.right > window.innerWidth) {
+    els.contextMenu.style.left = window.innerWidth - rect.width - 8 + "px";
+  }
+  if (rect.bottom > window.innerHeight) {
+    els.contextMenu.style.top = window.innerHeight - rect.height - 8 + "px";
+  }
+}
+
+function hideContextMenu() {
+  els.contextMenu.classList.add("hidden");
+  state.contextBalloonId = null;
+}
+
+els.contextMenu.addEventListener("click", (e) => {
+  const action = e.target.dataset.action;
+  if (!action) return;
+  const id = state.contextBalloonId;
+  hideContextMenu();
+  if (!id) return;
+
+  switch (action) {
+    case "edit": {
+      const target = findBalloon(id);
+      if (target && target.type === "text") {
+        state.selectedId = id;
+        renderAllBalloons();
+        startInlineTextEdit(target);
+      } else {
+        openModal("edit", id);
+      }
+      break;
+    }
+    case "replace":
+      openModal("replace", id);
+      break;
+    case "delete":
+      deleteBalloon(id);
+      pushHistory();
+      renderAllBalloons();
+      updateUI();
+      break;
+    case "duplicate": {
+      const src = findBalloon(id);
+      if (!src) break;
+      let copy;
+      if (src.type === "text") {
+        copy = createText(src.page, src.x + 15, src.y - 15, src.content);
+        copy.fontSize = src.fontSize;
+        copy.stroke = src.stroke;
+        copy.fill = src.fill;
+        copy.textColor = src.textColor;
+        copy.width = src.width;
+      } else {
+        copy = createBalloon(src.page, src.x + 15, src.y - 15);
+        copy.diameter = src.diameter;
+        copy.fontSize = src.fontSize;
+        copy.borderWidth = src.borderWidth;
+        copy.style = src.style;
+        copy.pointerAngle = src.pointerAngle;
+        copy.stroke = src.stroke;
+        copy.fill = src.fill;
+        copy.textColor = src.textColor;
+      }
+      state.selectedId = copy.id;
+      pushHistory();
+      renderAllBalloons();
+      updateUI();
+      break;
+    }
+    case "size":
+      state.selectedId = id;
+      renderAllBalloons();
+      updateUI();
+      // focus the size slider
+      els.balloonSize.focus();
+      break;
+    case "cancel":
+      break;
+  }
+});
+
+function openModal(mode, balloonId) {
+  const b = findBalloon(balloonId);
+  if (!b) return;
+  state.modalMode = mode;
+  state.contextBalloonId = balloonId;
+  els.modalTitle.textContent = mode === "edit" ? "Edit Number" : "Replace Number";
+  els.modalInput.value = b.number;
+  els.modal.classList.remove("hidden");
+  els.modalInput.focus();
+  els.modalInput.select();
+}
+
+function closeModal() {
+  els.modal.classList.add("hidden");
+  state.modalMode = null;
+}
+
+els.modalOk.addEventListener("click", () => {
+  const val = parseInt(els.modalInput.value, 10);
+  if (isNaN(val) || val < 1) return;
+  const id = state.contextBalloonId;
+  if (!id) return;
+  if (state.modalMode === "edit") {
+    const b = findBalloon(id);
+    if (b) b.number = val;
+  } else if (state.modalMode === "replace") {
+    replaceNumber(id, val);
+  }
+  pushHistory();
+  closeModal();
+  renderAllBalloons();
+  updateUI();
+});
+
+els.modalCancel.addEventListener("click", closeModal);
+els.modal.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") els.modalOk.click();
+  if (e.key === "Escape") closeModal();
+});
+
+// ─────────────────────────────────────────────────────────────
+// UI updates
+// ─────────────────────────────────────────────────────────────
+function updateUI() {
+  const balloons = state.annotations.filter(a => a.type === "balloon" || !a.type);
+  const texts = state.annotations.filter(a => a.type === "text");
+  const circles = balloons.filter(b => (b.style || "callout") === "circle");
+  const callouts = balloons.filter(b => (b.style || "callout") === "callout");
+  els.totalBalloons.textContent = circles.length + " / " + callouts.length;
+  const commentsEl = document.getElementById("total-comments");
+  if (commentsEl) commentsEl.textContent = texts.length;
+  els.nextNumber.textContent = getNextNumber(state.defaultBalloonStyle || "callout");
+  els.currentPageInfo.textContent =
+    state.numPages > 0 ? state.currentPage + " / " + state.numPages : "—";
+  els.pageIndicator.textContent =
+    state.numPages > 0 ? state.currentPage + " / " + state.numPages : "— / —";
+  els.zoomLevel.textContent = Math.round(state.scale * 100) + "%";
+
+  const sel = findBalloon(state.selectedId);
+  const propsBalloon = document.getElementById("props-balloon-fields");
+  const propsText = document.getElementById("props-text-fields");
+
+  if (sel) {
+    if (sel.type === "text") {
+      els.selectedInfo.textContent = "Text (p." + sel.page + ")";
+      if (propsBalloon) propsBalloon.classList.add("hidden");
+      if (propsText) propsText.classList.remove("hidden");
+      const tc = document.getElementById("prop-text-content");
+      if (tc) tc.value = sel.content || "";
+    } else {
+      const stLabel = (sel.style || "callout") === "circle" ? "Circle" : "Callout";
+      els.selectedInfo.textContent = stLabel + " #" + sel.number + " (p." + sel.page + ")";
+      if (propsBalloon) propsBalloon.classList.remove("hidden");
+      if (propsText) propsText.classList.add("hidden");
+      els.propNumber.value = sel.number;
+      els.propSize.value = sel.diameter;
+      const pbw = document.getElementById("prop-border-width");
+      if (pbw) pbw.value = sel.borderWidth != null ? sel.borderWidth : state.defaultBorderWidth;
+      const ps = document.getElementById("prop-style");
+      if (ps) ps.value = sel.style || state.defaultBalloonStyle || "callout";
+      const ppa = document.getElementById("prop-pointer-angle");
+      if (ppa) ppa.value = sel.pointerAngle != null ? sel.pointerAngle : (state.defaultPointerAngle || 225);
+    }
+    els.propsEmpty.classList.add("hidden");
+    els.propsForm.classList.remove("hidden");
+    els.propTextSize.value = sel.fontSize;
+    els.propStroke.value = sel.stroke;
+    els.propFill.value = sel.fill;
+    els.propTextColor.value = sel.textColor;
+  } else {
+    els.selectedInfo.textContent = "None";
+    els.propsEmpty.classList.remove("hidden");
+    els.propsForm.classList.add("hidden");
+  }
+
+  // Mode badge
+  const modeLabels = {
+    balloon: "Balloon Mode",
+    callout: "Callout Mode",
+    text: "Text Mode",
+    select: "Select Mode",
+    pan: "Pan Mode",
+    delete: "Delete Mode",
+  };
+  els.modeBadge.textContent = modeLabels[state.tool] || "Select Mode";
+  if (state.tool === "balloon" || state.tool === "callout") {
+    els.modeBadge.classList.add("active-balloon");
+  } else {
+    els.modeBadge.classList.remove("active-balloon");
+  }
+
+  // Viewer cursor classes
+  els.viewerContainer.classList.remove("mode-balloon", "mode-pan", "mode-text", "mode-delete", "mode-callout");
+  if (state.tool === "balloon") els.viewerContainer.classList.add("mode-balloon");
+  if (state.tool === "callout") els.viewerContainer.classList.add("mode-callout");
+  if (state.tool === "text") els.viewerContainer.classList.add("mode-text");
+  if (state.tool === "pan") els.viewerContainer.classList.add("mode-pan");
+  if (state.tool === "delete") els.viewerContainer.classList.add("mode-delete");
+
+  // Legend list
+  els.balloonList.innerHTML = "";
+  const sorted = [...state.annotations].sort((a, b) => {
+    if (a.type === "text" && b.type !== "text") return 1;
+    if (a.type !== "text" && b.type === "text") return -1;
+    if (a.type === "text") return (a.content || "").localeCompare(b.content || "");
+    return a.number - b.number;
+  });
+  sorted.forEach((b) => {
+    const li = document.createElement("li");
+    if (b.id === state.selectedId) li.classList.add("selected");
+    if (b.type === "text") {
+      const preview = (b.content || "Comment").slice(0, 24);
+      li.innerHTML = '<span class="num" style="border-radius:4px;border-color:#2563eb;background:#fffbeb;color:#111;font-size:9px;">T</span><span class="meta">' +
+        preview + " · p." + b.page + "</span>";
+    } else {
+      const st = (b.style || "callout") === "circle" ? "○" : "➤";
+      li.innerHTML = '<span class="num" style="border-color:' + b.stroke + ";background:" + b.fill +
+        ";color:" + b.textColor + '">' + b.number + '</span><span class="meta">' + st + ' p.' + b.page + "</span>";
+    }
+    li.addEventListener("click", () => {
+      state.selectedId = b.id;
+      const view = state.pageViews[b.page];
+      if (view) view.wrapper.scrollIntoView({ behavior: "smooth", block: "center" });
+      renderAllBalloons();
+      updateUI();
+    });
+    els.balloonList.appendChild(li);
+  });
+
+  els.balloonSize.value = state.defaultDiameter;
+  els.sizeValue.textContent = state.defaultDiameter + " pt";
+  const bwSlider = document.getElementById("border-width");
+  const bwVal = document.getElementById("border-width-value");
+  if (bwSlider) bwSlider.value = state.defaultBorderWidth;
+  if (bwVal) bwVal.textContent = state.defaultBorderWidth + " pt";
+  const styleSel = document.getElementById("balloon-style");
+  if (styleSel) styleSel.value = state.defaultBalloonStyle || "callout";
+  const angSlider = document.getElementById("pointer-angle");
+  const angVal = document.getElementById("pointer-angle-value");
+  if (angSlider) angSlider.value = state.defaultPointerAngle != null ? state.defaultPointerAngle : 225;
+  if (angVal) angVal.textContent = (state.defaultPointerAngle != null ? state.defaultPointerAngle : 225) + "°";
+  els.textSize.value = state.defaultFontSize;
+  els.textSizeValue.textContent = state.defaultFontSize + " pt";
+}
+
+function enableControls(on) {
+  [
+    els.btnSave, els.btnExport, els.btnZoomIn, els.btnZoomOut,
+    els.btnFitPage, els.btnFitWidth, els.btnPrev, els.btnNext,
+    els.gotoPage, els.balloonSize, els.textSize,
+  ].forEach((el) => { if (el) el.disabled = !on; });
+  const bw = document.getElementById("border-width");
+  if (bw) bw.disabled = !on;
+  const bs = document.getElementById("balloon-style");
+  if (bs) bs.disabled = !on;
+  const pa = document.getElementById("pointer-angle");
+  if (pa) pa.disabled = !on;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Tool selection
+// ─────────────────────────────────────────────────────────────
+function setTool(tool) {
+  state.tool = tool;
+  if (tool === "balloon") state.defaultBalloonStyle = "circle";
+  if (tool === "callout") state.defaultBalloonStyle = "callout";
+  $$(".tool-btn").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.tool === tool);
+  });
+  updateUI();
+}
+
+$$(".tool-btn").forEach((btn) => {
+  btn.addEventListener("click", () => setTool(btn.dataset.tool));
+});
+
+// ─────────────────────────────────────────────────────────────
+// Size controls (global defaults)
+// ─────────────────────────────────────────────────────────────
+els.balloonSize.addEventListener("input", () => {
+  state.defaultDiameter = parseFloat(els.balloonSize.value);
+  els.sizeValue.textContent = state.defaultDiameter + " pt";
+  const sel = findBalloon(state.selectedId);
+  if (sel && sel.type !== "text") {
+    sel.diameter = state.defaultDiameter;
+    renderAllBalloons();
+  }
+});
+
+(function setupBorderSlider() {
+  const slider = document.getElementById("border-width");
+  const label = document.getElementById("border-width-value");
+  if (!slider) return;
+  slider.addEventListener("input", () => {
+    state.defaultBorderWidth = parseFloat(slider.value);
+    if (label) label.textContent = state.defaultBorderWidth + " pt";
+    const sel = findBalloon(state.selectedId);
+    if (sel && sel.type !== "text") {
+      sel.borderWidth = state.defaultBorderWidth;
+      renderAllBalloons();
+    }
+  });
+})();
+
+(function setupStyleAndAngle() {
+  const styleSel = document.getElementById("balloon-style");
+  const angSlider = document.getElementById("pointer-angle");
+  const angVal = document.getElementById("pointer-angle-value");
+  if (styleSel) {
+    styleSel.addEventListener("change", () => {
+      state.defaultBalloonStyle = styleSel.value;
+      const sel = findBalloon(state.selectedId);
+      if (sel && sel.type !== "text") {
+        sel.style = styleSel.value;
+        renderAllBalloons();
+        updateUI();
+      }
+    });
+  }
+  if (angSlider) {
+    angSlider.addEventListener("input", () => {
+      state.defaultPointerAngle = parseFloat(angSlider.value);
+      if (angVal) angVal.textContent = state.defaultPointerAngle + "°";
+      const sel = findBalloon(state.selectedId);
+      if (sel && sel.type !== "text") {
+        sel.pointerAngle = state.defaultPointerAngle;
+        renderAllBalloons();
+      }
+    });
+  }
+})();
+
+els.textSize.addEventListener("input", () => {
+  state.defaultFontSize = parseFloat(els.textSize.value);
+  els.textSizeValue.textContent = state.defaultFontSize + " pt";
+  const sel = findBalloon(state.selectedId);
+  if (sel) {
+    sel.fontSize = state.defaultFontSize;
+    renderAllBalloons();
+  }
+});
+
+function applySelectedProps(fromLive) {
+  const sel = findBalloon(state.selectedId);
+  if (!sel) return;
+  if (sel.type === "text") {
+    const tc = document.getElementById("prop-text-content");
+    if (tc) sel.content = tc.value;
+  } else {
+    const numEl = document.getElementById("prop-number") || els.propNumber;
+    const newNum = parseInt(numEl && numEl.value, 10);
+    if (!isNaN(newNum) && newNum >= 1) {
+      replaceNumber(sel.id, newNum);
+    }
+    const sizeEl = document.getElementById("prop-size") || els.propSize;
+    if (sizeEl) sel.diameter = parseFloat(sizeEl.value) || sel.diameter;
+    const pbw = document.getElementById("prop-border-width");
+    if (pbw) {
+      sel.borderWidth = parseFloat(pbw.value);
+      if (isNaN(sel.borderWidth)) sel.borderWidth = state.defaultBorderWidth;
+      state.defaultBorderWidth = sel.borderWidth;
+    }
+    const ps = document.getElementById("prop-style");
+    if (ps && ps.value) {
+      const oldStyle = sel.style || "callout";
+      sel.style = ps.value;
+      // If style family changed, take next free number in new series when needed
+      if (oldStyle !== sel.style) {
+        const taken = getBalloonsOfStyle(sel.style).filter(b => b.id !== sel.id).map(b => b.number);
+        if (taken.includes(sel.number)) {
+          sel.number = getNextNumber(sel.style);
+        }
+      }
+      state.defaultBalloonStyle = sel.style;
+    }
+    const ppa = document.getElementById("prop-pointer-angle");
+    if (ppa) {
+      sel.pointerAngle = parseFloat(ppa.value) || 0;
+      state.defaultPointerAngle = sel.pointerAngle;
+    }
+    state.defaultDiameter = sel.diameter;
+  }
+  const fsz = document.getElementById("prop-text-size") || els.propTextSize;
+  if (fsz) sel.fontSize = parseFloat(fsz.value) || sel.fontSize;
+  const stroke = document.getElementById("prop-stroke") || els.propStroke;
+  const fill = document.getElementById("prop-fill") || els.propFill;
+  const tcol = document.getElementById("prop-text-color") || els.propTextColor;
+  if (stroke) sel.stroke = stroke.value;
+  if (fill) sel.fill = fill.value;
+  if (tcol) sel.textColor = tcol.value;
+  state.defaultFontSize = sel.fontSize;
+  if (!fromLive) pushHistory();
+  renderAllBalloons();
+  updateUI();
+}
+
+els.btnApplyProps.addEventListener("click", () => applySelectedProps(false));
+
+// Live update when editing right-panel fields (numbers appear on PDF immediately)
+(function bindLiveProps() {
+  const ids = [
+    "prop-number", "prop-size", "prop-border-width", "prop-style",
+    "prop-pointer-angle", "prop-text-size", "prop-stroke", "prop-fill",
+    "prop-text-color", "prop-text-content"
+  ];
+  let histTimer = null;
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const evt = el.tagName === "SELECT" || el.type === "color" ? "change" : "input";
+    el.addEventListener(evt, () => {
+      applySelectedProps(true);
+      clearTimeout(histTimer);
+      histTimer = setTimeout(() => pushHistory(), 400);
+    });
+  });
+})();
+
+// ─────────────────────────────────────────────────────────────
+// Zoom & navigation
+// ─────────────────────────────────────────────────────────────
+async function setScale(newScale) {
+  state.scale = Math.min(4, Math.max(0.25, newScale));
+  await renderAllPages();
+  updateUI();
+}
+
+els.btnZoomIn.addEventListener("click", () => setScale(state.scale * 1.25));
+els.btnZoomOut.addEventListener("click", () => setScale(state.scale / 1.25));
+
+els.btnFitPage.addEventListener("click", async () => {
+  if (!state.pdfDoc) return;
+  const page = await state.pdfDoc.getPage(state.currentPage);
+  const vp = page.getViewport({ scale: 1 });
+  const containerW = els.viewerContainer.clientWidth - 48;
+  const containerH = els.viewerContainer.clientHeight - 48;
+  const scale = Math.min(containerW / vp.width, containerH / vp.height);
+  await setScale(scale);
+});
+
+els.btnFitWidth.addEventListener("click", async () => {
+  if (!state.pdfDoc) return;
+  const page = await state.pdfDoc.getPage(state.currentPage);
+  const vp = page.getViewport({ scale: 1 });
+  const containerW = els.viewerContainer.clientWidth - 48;
+  await setScale(containerW / vp.width);
+});
+
+els.btnPrev.addEventListener("click", () => {
+  if (state.currentPage > 1) {
+    state.currentPage--;
+    const view = state.pageViews[state.currentPage];
+    if (view) view.wrapper.scrollIntoView({ behavior: "smooth", block: "start" });
+    updateUI();
+  }
+});
+
+els.btnNext.addEventListener("click", () => {
+  if (state.currentPage < state.numPages) {
+    state.currentPage++;
+    const view = state.pageViews[state.currentPage];
+    if (view) view.wrapper.scrollIntoView({ behavior: "smooth", block: "start" });
+    updateUI();
+  }
+});
+
+els.gotoPage.addEventListener("change", () => {
+  const p = parseInt(els.gotoPage.value, 10);
+  if (p >= 1 && p <= state.numPages) {
+    state.currentPage = p;
+    const view = state.pageViews[p];
+    if (view) view.wrapper.scrollIntoView({ behavior: "smooth", block: "start" });
+    updateUI();
+  }
+});
+
+// Track visible page while scrolling
+els.viewerContainer.addEventListener("scroll", () => {
+  const wrappers = $$(".page-wrapper");
+  let closest = 1;
+  let minDist = Infinity;
+  const mid = els.viewerContainer.scrollTop + els.viewerContainer.clientHeight / 3;
+  wrappers.forEach((w) => {
+    const top = w.offsetTop;
+    const dist = Math.abs(top - mid);
+    if (dist < minDist) {
+      minDist = dist;
+      closest = parseInt(w.dataset.page, 10);
+    }
+  });
+  if (closest !== state.currentPage) {
+    state.currentPage = closest;
+    updateUI();
+  }
+});
+
+// ─────────────────────────────────────────────────────────────
+// File open / drag-drop
+// ─────────────────────────────────────────────────────────────
+els.btnOpen.addEventListener("click", () => els.fileInput.click());
+els.fileInput.addEventListener("change", async () => {
+  const file = els.fileInput.files[0];
+  if (!file) return;
+  if (file.name.endsWith(".json") || file.type === "application/json") {
+    await loadProject(file);
+  } else {
+    loadPdf(file);
+  }
+});
+
+async function loadProject(file) {
+  try {
+    const text = await file.text();
+    const project = JSON.parse(text);
+    if (!project.pdfBase64 || !project.balloons) {
+      alert("Invalid project file");
+      return;
+    }
+    const binary = atob(project.pdfBase64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
+    await loadPdf(bytes, project.fileName || "drawing.pdf");
+    // restore balloons after load cleared them
+    const restored = (project.balloons || []).map(b => ({ ...b, type: b.type || "balloon" }));
+    const restoredTexts = (project.texts || []).map(t => ({ ...t, type: "text" }));
+    state.annotations = [...restored, ...restoredTexts];
+    state.nextId = Math.max(0, ...state.annotations.map((b) => b.id), 0) + 1;
+    if (project.defaults) {
+      state.defaultDiameter = project.defaults.diameter ?? 18;
+      state.defaultFontSize = project.defaults.fontSize ?? 10;
+      state.defaultStroke = project.defaults.stroke ?? "#e11d48";
+      state.defaultFill = project.defaults.fill ?? "#ffffff";
+      state.defaultTextColor = project.defaults.textColor ?? "#000000";
+    }
+    state.history = [structuredClone(state.annotations)];
+    state.historyIndex = 0;
+    renderAllBalloons();
+    updateUI();
+    updateUndoRedoUI();
+  } catch (err) {
+    console.error(err);
+    alert("Failed to load project: " + err.message);
+  }
+}
+
+["dragenter", "dragover"].forEach((ev) => {
+  els.dropZone.addEventListener(ev, (e) => {
+    e.preventDefault();
+    els.dropZone.classList.add("drag-over");
+  });
+  els.viewerContainer.addEventListener(ev, (e) => {
+    e.preventDefault();
+  });
+});
+["dragleave", "drop"].forEach((ev) => {
+  els.dropZone.addEventListener(ev, (e) => {
+    e.preventDefault();
+    els.dropZone.classList.remove("drag-over");
+  });
+});
+els.dropZone.addEventListener("drop", (e) => {
+  const file = e.dataTransfer.files[0];
+  if (file && file.type === "application/pdf") loadPdf(file);
+});
+// Also allow drop anywhere on the viewer after load
+els.viewerContainer.addEventListener("drop", (e) => {
+  e.preventDefault();
+  const file = e.dataTransfer.files[0];
+  if (file && file.type === "application/pdf") loadPdf(file);
+});
+
+// ─────────────────────────────────────────────────────────────
+// Save project (JSON) & Export PDF
+// ─────────────────────────────────────────────────────────────
+function uint8ToBase64(bytes) {
+  // Safe chunked conversion – avoids stack overflow on large PDFs
+  let binary = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+  }
+  return btoa(binary);
+}
+
+function triggerDownload(blob, filename) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    URL.revokeObjectURL(a.href);
+    a.remove();
+  }, 1500);
+}
+
+els.btnSave.addEventListener("click", () => {
+  if (!state.pdfBytes) {
+    alert("No PDF loaded. Open a drawing first.");
+    return;
+  }
+  try {
+    const project = {
+      version: 1,
+      fileName: state.fileName,
+      balloons: state.balloons,
+      texts: getTexts(),
+      defaults: {
+        diameter: state.defaultDiameter,
+        fontSize: state.defaultFontSize,
+        stroke: state.defaultStroke,
+        fill: state.defaultFill,
+        textColor: state.defaultTextColor,
+      },
+      pdfBase64: uint8ToBase64(state.pdfBytes),
+    };
+    const blob = new Blob([JSON.stringify(project)], { type: "application/json" });
+    const name = (state.fileName || "drawing").replace(/\.pdf$/i, "") + ".balloon-project.json";
+    triggerDownload(blob, name);
+  } catch (err) {
+    console.error(err);
+    alert("Save failed: " + (err.message || err));
+  }
+});
+
+els.btnExport.addEventListener("click", async () => {
+  if (!state.pdfBytes) {
+    alert("No PDF loaded. Open a drawing first.");
+    return;
+  }
+  if (typeof PDFLib === "undefined") {
+    alert("pdf-lib failed to load. Check your internet connection and reload the page.");
+    return;
+  }
+
+  els.btnExport.disabled = true;
+  const prevHtml = els.btnExport.innerHTML;
+  els.btnExport.textContent = "Exporting…";
+
+  try {
+    const { PDFDocument, rgb, StandardFonts } = PDFLib;
+
+    function toRgb(hex) {
+      const h = (hex || "#000000").replace("#", "");
+      const full = h.length === 3
+        ? h[0]+h[0]+h[1]+h[1]+h[2]+h[2]
+        : h;
+      return rgb(
+        parseInt(full.substring(0, 2), 16) / 255,
+        parseInt(full.substring(2, 4), 16) / 255,
+        parseInt(full.substring(4, 6), 16) / 255
+      );
+    }
+
+    const pdfDoc = await PDFDocument.load(state.pdfBytes.slice());
+    const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const pages = pdfDoc.getPages();
+
+    for (const b of state.annotations) {
+      const page = pages[b.page - 1];
+      if (!page) continue;
+
+      if (b.type === "text") {
+        const content = b.content || "Comment";
+        const fontSize = b.fontSize || 10;
+        const lines = content.split("\n");
+        const lineHeight = fontSize * 1.25;
+        // background rectangle
+        let maxW = 0;
+        lines.forEach(line => {
+          maxW = Math.max(maxW, font.widthOfTextAtSize(line, fontSize));
+        });
+        const pad = 3;
+        const boxW = Math.max(b.width || 40, maxW + pad * 2);
+        const boxH = lines.length * lineHeight + pad * 2;
+        // PDF y is bottom-left of text baseline area; our stored (x,y) is top-left of box in PDF terms?
+        // We stored PDF coords from click (bottom-left origin). Screen overlay used top-left of element.
+        // pdfToScreen maps PDF point to top of element for balloons (center). For text we used same
+        // convertToViewportPoint for the click point as top-left of the text box.
+        // In PDF space Y increases up, so top of box is at y + boxH in screen... 
+        // When placing, screenToPdf of click becomes (x,y) and we draw element at that screen point as top-left.
+        // convertToViewportPoint(pdfX, pdfY) gives CSS position of that PDF point.
+        // For export: text top-left in PDF coords is (b.x, b.y) but PDF text draws from baseline bottom-left.
+        // Rectangle: bottom-left of box in PDF = (b.x, b.y - boxH) if b.y is top.
+        // Actually: viewport has origin top-left of page in CSS. PDF origin bottom-left.
+        // A PDF point (px, py) appears at CSS (sx, sy) via convertToViewportPoint.
+        // Our text element left/top = (sx, sy) where (sx,sy) = convertToViewportPoint(b.x, b.y).
+        // So b.y is the PDF Y of the TOP edge of the text box.
+        // PDF rectangle bottom-left: (b.x, b.y - boxH), size boxW x boxH.
+        page.drawRectangle({
+          x: b.x,
+          y: b.y - boxH,
+          width: boxW,
+          height: boxH,
+          borderWidth: 1,
+          borderColor: toRgb(b.stroke || "#2563eb"),
+          color: toRgb(b.fill || "#fffbeb"),
+          opacity: 0.95,
+          borderOpacity: 1,
+        });
+        lines.forEach((line, i) => {
+          // first line baseline near top of box
+          const baselineY = b.y - pad - fontSize * 0.85 - i * lineHeight;
+          page.drawText(line, {
+            x: b.x + pad,
+            y: baselineY,
+            size: fontSize,
+            font,
+            color: toRgb(b.textColor || "#111827"),
+          });
+        });
+      } else {
+        const radius = b.diameter / 2;
+        const style = b.style || "callout";
+        const angleDeg = b.pointerAngle != null ? b.pointerAngle : 225;
+        // Draw pointer first (under circle) for callout style
+        if (style === "callout") {
+          // Leader + arrow: angle 0 = up, clockwise (same as UI)
+          const dirX = Math.sin(angleDeg * Math.PI / 180);
+          const dirY = Math.cos(angleDeg * Math.PI / 180);
+          const startX = b.x + dirX * radius;
+          const startY = b.y + dirY * radius;
+          const tipX = b.x + dirX * (radius + radius * 1.1);
+          const tipY = b.y + dirY * (radius + radius * 1.1);
+          const midX = b.x + dirX * (radius + radius * 0.75);
+          const midY = b.y + dirY * (radius + radius * 0.75);
+          const bwLead = Math.max(0.6, (b.borderWidth != null ? b.borderWidth : 1) * 1.1);
+          page.drawLine({
+            start: { x: startX, y: startY },
+            end: { x: midX, y: midY },
+            thickness: bwLead,
+            color: toRgb(b.stroke),
+            opacity: 1,
+          });
+          // Arrow head
+          const aw = radius * 0.28;
+          const perpX = -dirY;
+          const perpY = dirX;
+          const a1x = midX + perpX * aw;
+          const a1y = midY + perpY * aw;
+          const a2x = midX - perpX * aw;
+          const a2y = midY - perpY * aw;
+          page.drawSvgPath(
+            `M ${tipX} ${tipY} L ${a1x} ${a1y} L ${a2x} ${a2y} Z`,
+            {
+              borderWidth: 0,
+              color: toRgb(b.stroke),
+              opacity: 1,
+            }
+          );
+        }
+        page.drawCircle({
+          x: b.x,
+          y: b.y,
+          size: radius,
+          borderWidth: Math.max(0.25, b.borderWidth != null ? b.borderWidth : state.defaultBorderWidth),
+          borderColor: toRgb(b.stroke),
+          color: toRgb(b.fill),
+          opacity: 1,
+          borderOpacity: 1,
+        });
+        const text = String(b.number);
+        const textWidth = font.widthOfTextAtSize(text, b.fontSize);
+        const textHeight = font.heightAtSize(b.fontSize);
+        page.drawText(text, {
+          x: b.x - textWidth / 2,
+          y: b.y - textHeight / 2 + b.fontSize * 0.15,
+          size: b.fontSize,
+          font,
+          color: toRgb(b.textColor),
+        });
+      }
+    }
+
+    const outBytes = await pdfDoc.save();
+    // Ensure we pass a real ArrayBuffer-backed view for the Blob
+    const ab = outBytes.buffer.slice(outBytes.byteOffset, outBytes.byteOffset + outBytes.byteLength);
+    const blob = new Blob([ab], { type: "application/pdf" });
+    const name = (state.fileName || "drawing").replace(/\.pdf$/i, "") + "_ballooned.pdf";
+    triggerDownload(blob, name);
+  } catch (err) {
+    console.error(err);
+    alert("Export failed: " + (err.message || err));
+  } finally {
+    els.btnExport.disabled = false;
+    els.btnExport.innerHTML = prevHtml;
+  }
+});
+
+// ─────────────────────────────────────────────────────────────
+// Keyboard shortcuts
+// ─────────────────────────────────────────────────────────────
+document.addEventListener("keydown", (e) => {
+  if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+
+  if (e.ctrlKey || e.metaKey) {
+    if (e.key === "z") { e.preventDefault(); undo(); }
+    if (e.key === "y") { e.preventDefault(); redo(); }
+    if (e.key === "s") { e.preventDefault(); els.btnSave.click(); }
+    if (e.key === "o") { e.preventDefault(); els.btnOpen.click(); }
+    return;
+  }
+
+  if (e.key === "b" || e.key === "B") setTool("balloon");
+  if (e.key === "c" || e.key === "C") setTool("callout");
+  if (e.key === "t" || e.key === "T") setTool("text");
+  if (e.key === "v" || e.key === "V") setTool("select");
+  if (e.key === "h" || e.key === "H") setTool("pan");
+  if (e.key === "Delete" || e.key === "Backspace") {
+    if (state.selectedId) {
+      deleteBalloon(state.selectedId);
+      pushHistory();
+      renderAllBalloons();
+      updateUI();
+    }
+  }
+  if (e.key === "Escape") {
+    hideContextMenu();
+    closeModal();
+    state.selectedId = null;
+    renderAllBalloons();
+    updateUI();
+  }
+});
+
+// Hide context menu on outside click
+document.addEventListener("pointerdown", (e) => {
+  if (!els.contextMenu.contains(e.target)) hideContextMenu();
+});
+
+// ─────────────────────────────────────────────────────────────
+// Undo / Redo buttons
+// ─────────────────────────────────────────────────────────────
+els.btnUndo.addEventListener("click", undo);
+els.btnRedo.addEventListener("click", redo);
+
+
+// Mouse-wheel zoom confined to the PDF viewer area (does not zoom the browser page)
+els.viewerContainer.addEventListener("wheel", (e) => {
+  // Always prevent browser page zoom / scroll-chaining when over the PDF area
+  e.preventDefault();
+  if (!state.pdfDoc) return;
+
+  const delta = e.deltaY;
+  // Zoom toward cursor position would be nicer; for now scale about center
+  const factor = delta > 0 ? 0.9 : 1.1;
+  const next = Math.min(4, Math.max(0.25, state.scale * factor));
+  if (Math.abs(next - state.scale) < 0.001) return;
+  setScale(next);
+}, { passive: false });
+
+// Prevent browser zoom (Ctrl+wheel) when pointer is over the viewer
+els.viewerContainer.addEventListener("gesturestart", (e) => e.preventDefault());
+
+// ─────────────────────────────────────────────────────────────
+// Init
+// ─────────────────────────────────────────────────────────────
+
+// Arrow-key nudge for precise placement (1 PDF pt, Shift = 5 pt)
+document.addEventListener("keydown", (e) => {
+  if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+  if (!state.selectedId) return;
+  const anno = findBalloon(state.selectedId);
+  if (!anno) return;
+  const step = e.shiftKey ? 5 : 1;
+  let dx = 0, dy = 0;
+  if (e.key === "ArrowLeft") dx = -step;
+  else if (e.key === "ArrowRight") dx = step;
+  else if (e.key === "ArrowUp") dy = step;   // PDF Y up
+  else if (e.key === "ArrowDown") dy = -step;
+  else return;
+  e.preventDefault();
+  anno.x += dx;
+  anno.y += dy;
+  renderAllBalloons();
+  // debounce history
+  clearTimeout(window.__nudgeHist);
+  window.__nudgeHist = setTimeout(() => pushHistory(), 400);
+  updateUI();
+});
+
+updateUI();
+updateUndoRedoUI();
+
+// Theme: light / dark (saved in localStorage)
+(function initTheme() {
+  const saved = localStorage.getItem("balloon-theme") || "dark";
+  document.documentElement.setAttribute("data-theme", saved);
+  const btn = document.getElementById("btn-theme");
+  function syncIcon() {
+    const t = document.documentElement.getAttribute("data-theme");
+    if (btn) btn.textContent = t === "light" ? "☾" : "☀";
+    if (btn) btn.title = t === "light" ? "Switch to dark mode" : "Switch to light mode";
+  }
+  syncIcon();
+  if (btn) {
+    btn.addEventListener("click", () => {
+      const next = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("balloon-theme", next);
+      syncIcon();
+    });
+  }
+})();
+
+
+console.log("Balloon Reference Numbering ready.");
+
+  </script>
+</body>
+</html>
